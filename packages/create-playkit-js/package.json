@@ -1,0 +1,35 @@
+{
+  "name": "create-playkit-plugin",
+  "version": "0.0.1",
+  "keywords": [
+    "playkit"
+  ],
+  "description": "Create playkit plugin",
+  "repository": "omridevk/playkit-js-ovp",
+  "license": "MIT",
+  "engines": {
+    "node": ">=8"
+  },
+  "bugs": {
+    "url": "https://github.com/omridevk/playkit-js-ovp/issues"
+  },
+  "files": [
+    "index.js",
+    "createPlaykitPlugin.js"
+  ],
+  "bin": {
+    "create-playkit-plugin": "./index.js"
+  },
+  "dependencies": {
+    "chalk": "2.4.2",
+    "commander": "2.19.0",
+    "cross-spawn": "6.0.5",
+    "envinfo": "7.1.0",
+    "fs-extra": "7.0.1",
+    "hyperquest": "2.1.3",
+    "semver": "5.6.0",
+    "tar-pack": "3.4.1",
+    "tmp": "0.0.33",
+    "validate-npm-package-name": "3.0.0"
+  }
+}
