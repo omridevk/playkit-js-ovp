@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{pluginName} - Player V2</title>
+
+  <!--
+      TODO add here a url to player v2 for relevant partner / uiconf
+      ie:  https://cdnapisec.kaltura.com/p/{partner_id}/embedIframeJs/uiconf_id/{uiconf_id}
+  -->
+  <script src=""></script>
+
+  <style>
+    #kaltura_player {
+      display: inline;
+      position: absolute;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+
+<body>
+<h1>{pluginName} - Player V2</h1>
+<div style="position:relative;margin-top:10px">
+    <div id="kaltura_player"></div>
+</div>
+
+<script>
+
+  var kdp;
+
+  kWidget.addReadyCallback(function( playerId ){
+    kdp = document.getElementById( playerId );
+  });
+
+  kWidget.embed({
+    "targetId": "kaltura_player",
+    "wid": "", <!-- TODO set here your widget id -->
+    "uiconf_id": "", <!-- TODO set here your uiconf id as set in the url above -->
+    "flashvars": {
+      "autoPlay": false,
+      ks: '', <!-- TODO (optional) set here a valid ks -->
+      "{pluginName}": {
+        plugin: true,
+        <% for (var chunk in htmlWebpackPlugin.files.chunks) { %>iframeHTML5Js: "<%= htmlWebpackPlugin.files.chunks[chunk].entry %>",<% } %>
+      },
+    },
+    "entry_id": "" <!-- TODO set here the entry you want to play -->
+  });
+</script>
+</body>
+</html>

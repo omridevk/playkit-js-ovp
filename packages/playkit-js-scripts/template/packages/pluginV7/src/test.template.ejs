@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{PluginName}} Test Page</title>
+
+    <!--
+        TODO add here a url to player v7 for relevant partner / uiconf
+        ie:  https://cdnapisec.kaltura.com/p/{partner_id}/embedPlaykitJs/uiconf_id/{uiconf_id}
+    -->
+    <script src=""></script>
+
+
+    <% for (var chunk in htmlWebpackPlugin.files.chunks) { %><script id="bundle" async src="<%= htmlWebpackPlugin.files.chunks[chunk].entry %>"></script><% } %>
+    <style>
+        #player-div {
+            display: inline;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+<h1>{{PluginName}} Test Page</h1>
+<div style="position:relative;margin-top:10px">
+    <div id="player-div"></div>
+</div>
+
+<script>
+  var player;
+
+  var config = {
+    logLevel: "DEBUG",
+    targetId: "player-div",
+    provider: {
+      partnerId: "", <!-- TODO set here your partner id as set in the url above -->
+      uiConfId: "" <!-- TODO set here your uiconf id as set in the url above -->
+    },
+    plugins: {
+      hotspots: {
+      }
+    }
+  };
+
+  document.getElementById("bundle").onload =  function(){
+
+    var mediaInfo = {entryId: ""}; <!-- TODO set here the entry you want to play -->
+    player = KalturaPlayer.setup(config);
+    player.loadMedia(mediaInfo).then(function() {
+      player.play();
+    });
+  }
+</script>
+
+</body>
+
+</html>
