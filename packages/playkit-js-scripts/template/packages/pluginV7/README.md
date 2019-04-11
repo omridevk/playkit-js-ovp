@@ -1,2 +1,2 @@
-# Hotspots plugin - Kaltura Player V7
+# {pluginName} plugin - Kaltura Player V7
 tbd

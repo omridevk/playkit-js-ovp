@@ -189,8 +189,8 @@ function createApp(
     console.log();
 
     const packageJson = {
-        name: appName,
-        version: '0.1.0',
+        name: "playkit-js-" + appName,
+        version: '0.0.1',
         private: true,
     };
     fs.writeFileSync(
@@ -520,7 +520,7 @@ function checkNodeVersion(packageName) {
         console.error(
             chalk.red(
                 'You are running Node %s.\n' +
-                'Create React App requires Node %s or higher. \n' +
+                'Create Playkit Plugin requires Node %s or higher. \n' +
                 'Please update your version of Node.'
             ),
             process.version,
@@ -544,20 +544,20 @@ function checkAppName(appName) {
     }
 
     // TODO: there should be a single place that holds the dependencies
-    const dependencies = ['react', 'react-dom', 'react-scripts'].sort();
-    if (dependencies.indexOf(appName) >= 0) {
-        console.error(
-            chalk.red(
-                `We cannot create a project called ${chalk.green(
-                    appName
-                )} because a dependency with the same name exists.\n` +
-                `Due to the way npm works, the following names are not allowed:\n\n`
-            ) +
-            chalk.cyan(dependencies.map(depName => `  ${depName}`).join('\n')) +
-            chalk.red('\n\nPlease choose a different project name.')
-        );
-        process.exit(1);
-    }
+    // const dependencies = ['preact', 'react-dom', 'react-scripts'].sort();
+    // if (dependencies.indexOf(appName) >= 0) {
+    //     console.error(
+    //         chalk.red(
+    //             `We cannot create a project called ${chalk.green(
+    //                 appName
+    //             )} because a dependency with the same name exists.\n` +
+    //             `Due to the way npm works, the following names are not allowed:\n\n`
+    //         ) +
+    //         chalk.cyan(dependencies.map(depName => `  ${depName}`).join('\n')) +
+    //         chalk.red('\n\nPlease choose a different project name.')
+    //     );
+    //     process.exit(1);
+    // }
 }
 
 function makeCaretRange(dependencies, name) {
@@ -743,28 +743,6 @@ function checkThatNpmCanReadCwd() {
     return false;
 }
 
-function checkIfOnline(useYarn) {
-    if (!useYarn) {
-        // Don't ping the Yarn registry.
-        // We'll just assume the best case.
-        return Promise.resolve(true);
-    }
-
-    return new Promise(resolve => {
-        dns.lookup('registry.yarnpkg.com', err => {
-            let proxy;
-            if (err != null && (proxy = getProxy())) {
-                // If a proxy is defined, we likely can't resolve external hostnames.
-                // Try to resolve the proxy name as an indication of a connection.
-                dns.lookup(url.parse(proxy).hostname, proxyErr => {
-                    resolve(proxyErr == null);
-                });
-            } else {
-                resolve(err == null);
-            }
-        });
-    });
-}
 
 function executeNodeScript({ cwd, args }, data, source) {
     return new Promise((resolve, reject) => {

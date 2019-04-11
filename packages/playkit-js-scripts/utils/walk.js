@@ -40,4 +40,5 @@ function walk(dir, excluded) {
     });
 }
 
-module.exports = {walk};
+
+module.exports = walk;

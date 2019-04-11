@@ -21,13 +21,15 @@ const args = process.argv.slice(2);
 const scriptIndex = args.findIndex(
     x => x === 'build' || x === 'eject' || x === 'start' || x === 'test'
 );
-const script = scriptIndex === -1 ? args[0] : args[scriptIndex];
+let script = scriptIndex === -1 ? args[0] : args[scriptIndex];
 const nodeArgs = scriptIndex > 0 ? args.slice(0, scriptIndex) : [];
 
 switch (script) {
-    case 'build':
+    case 'build-v2':
+    case 'build-v7':
     case 'eject':
-    case 'start':
+    case 'start-v2':
+    case 'start-v7':
     case 'test': {
         const result = spawn.sync(
             'node',
@@ -56,6 +58,7 @@ switch (script) {
         break;
     }
     default:
+        console.log(script);
         console.log('Unknown script "' + script + '".');
         console.log('Perhaps you need to update react-scripts?');
         console.log(

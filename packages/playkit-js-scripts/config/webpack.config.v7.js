@@ -1,17 +1,17 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CopyPlugin = require("copy-webpack-plugin");
-
-const packageJson = require('./package.json');
-const distFolder = path.join(__dirname, "/dist");
+const paths = require('./paths');
+const packageJson = require(paths.pluginV7.packageJson);
+const distFolder = path.join(paths.pluginV7.path, "/dist");
 
 module.exports = (env, options) => {
     return {
-        entry: "./src/index.ts",
+        entry: paths.pluginV7.entry,
         resolve: {
             extensions: [".ts", ".tsx", ".js"],
-            alias: { "@plugin/core": path.resolve(__dirname, "../../src/") },
-            modules: [path.resolve(__dirname, "node_modules")],
+            alias: { "@plugin/core": paths.pluginV7.appSrc },
+            modules: [path.resolve(paths.pluginV7.path, "node_modules")],
             symlinks: false
         },
         output: {
@@ -22,20 +22,48 @@ module.exports = (env, options) => {
         module: {
             rules: [
                 {
-                    test: /\.tsx?$/,
-                    loader: "awesome-typescript-loader"
+                    test: /\.(js|mjs|jsx|ts|tsx)$/,
+                    include: paths.pluginV7.appSrc,
+                    loader: require.resolve('babel-loader'),
+                    options: {
+                        customize: require.resolve(
+                            'babel-preset-react-app/webpack-overrides'
+                        ),
+                        babelrc: false,
+                        configFile: false,
+                        presets: [require.resolve('babel-preset-react-app')],
+                        plugins: [
+                            [
+                                require.resolve('babel-plugin-named-asset-import'),
+                                {
+                                    loaderMap: {
+                                        svg: {
+                                            ReactComponent: '@svgr/webpack?-svgo,+ref![path]',
+                                        },
+                                    },
+                                },
+                            ],
+                        ],
+                        // This is a feature of `babel-loader` for webpack (not Babel itself).
+                        // It enables caching results in ./node_modules/.cache/babel-loader/
+                        // directory for faster rebuilds.
+                        // cacheDirectory: true,
+                        // TODO: replace with production value
+                        // cacheCompression: true,
+                        compact: true,
+                    },
                 }
             ]
         },
         plugins: [
             new HtmlWebpackPlugin({
-                filename: path.resolve(distFolder, "index.html"),
-                template: path.resolve("src", "test.ejs"),
-                inject: false,
+                filename: path.join(distFolder, "index.html"),
+                template: path.join(paths.pluginV7.appSrc, "test.ejs"),
+                inject: true,
                 hash: true
             }),
             new CopyPlugin([
-                { from: "src/tests", to: distFolder }
+                { from: paths.pluginV7.appPublic, to: distFolder }
             ])
         ],
         devServer: {

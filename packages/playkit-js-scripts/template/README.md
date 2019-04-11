@@ -1,4 +1,4 @@
-# Hotspots plugin (player v2 & v7)
+# IVQ plugin (player v2 & v7)
 
 ## Overview
 TBD

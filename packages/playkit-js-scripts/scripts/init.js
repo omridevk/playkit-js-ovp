@@ -7,11 +7,12 @@ process.on('unhandledRejection', err => {
 });
 
 const fs = require('fs-extra');
+const {walk, ucfirst} = require('../utils');
 const format = require("string-template");
 const compile = require("string-template/compile");
-const walk = require('../utils/walk').walk;
 const path = require('path');
 const chalk = require('chalk');
+const walkSync = require('walk-sync');
 const execSync = require('child_process').execSync;
 const spawn = require('cross-spawn');
 const os = require('os');
@@ -86,10 +87,12 @@ module.exports = function(
 
     // Setup the script rules
     appPackage.scripts = {
-        start: 'playkit-js-scripts start',
-        build: 'playkit-js-scripts build',
-        test: 'playkit-js-scripts test',
-        eject: 'playkit-js-scripts eject',
+        "start:v2": 'playkit-js-scripts start-v2',
+        "start:v7": 'playkit-js-scripts start-v7',
+        "build:v7": 'playkit-js-scripts build-v7',
+        "build:v2": 'playkit-js-scripts build-v2',
+        "test": 'playkit-js-scripts test',
+        "eject": 'playkit-js-scripts eject',
     };
 
     // Setup the browsers list
@@ -162,9 +165,6 @@ module.exports = function(
         fs.unlinkSync(templateDependenciesPath);
     }
 
-    // Install react and react-dom for backward compatibility with old CRA cli
-    // which doesn't install react and react-dom along with react-scripts
-    // or template is presetend (via --internal-testing-template)
     if (!isPreactInstalled(appPackage) || template) {
         console.log(`Installing preact using ${command}...`);
         console.log();
@@ -175,21 +175,15 @@ module.exports = function(
             return;
         }
     }
+    replaceTemplate(appPath, appName);
+
+    installSubPackages(appPath);
+
     if (tryGitInit(appPath)) {
         console.log();
         console.log('Initialized a git repository.');
     }
-    replaceTemplate(appPath);
-
-    // Display the most elegant way to cd.
-    // This needs to handle an undefined originalDirectory for
-    // backward compatibility with old global-cli's.
-    let cdpath;
-    if (originalDirectory && path.join(originalDirectory, appName) === appPath) {
-        cdpath = appName;
-    } else {
-        cdpath = appPath;
-    }
+    const cdpath = appPath;
 
     // Change displayed command to yarn instead of yarnpkg
     const displayedCommand = 'npm';
@@ -235,25 +229,45 @@ module.exports = function(
     console.log('Happy hacking!');
 };
 
-function replaceTemplate(appPath) {
-    console.log();
-    console.log("app path");
-    console.log(appPath);
-    walk(appPath, ['node_modules', '.git']).then(files => {
-        files.forEach(file => {
-            fs.readFile(file, 'utf8', function(err, contents) {
-                if (!contents) {
-                    return;
-                }
-                let greetingTemplate = compile(contents);
-                fs.writeFile(file, greetingTemplate({className: 'TestPlugin', pluginName: "testPlugin"}), function(err) {
-                    if(err) {
-                        return console.log(err);
-                    }
-                });
-            });
-        })
+function replaceTemplate(appPath, appName) {
+    walkSync(appPath, {ignore: ['node_modules', '.git']})
+        .filter(file => !path.extname(file).match(/\.(tgz|tar)/))
+        .filter(file => fs.statSync(file).isFile())
+        .forEach(file => {
+            const content = fs.readFileSync(file, 'utf8');
+            if (!content) {
+                return;
+            }
+            const className = ucfirst(appName) + "Plugin";
+            let template = compile(content);
+            fs.writeFileSync(file, template({className, pluginName: appName}));
+        });
+}
+
+function installSubPackages(appPath, verbose) {
+
+    const originalDirectory = process.cwd();
+    const packageDirectory = path.join(appPath, 'packages');
+    const packages = fs.readdirSync(packageDirectory).map(file => ({folder: path.join(packageDirectory, file), name: file}))
+        .filter(({folder}) => !fs.statSync(folder).isFile())
+        .filter(({folder}) => fs.existsSync(path.join(folder, 'package.json')));
+    packages.forEach(({folder, name}) => {
+        process.chdir(folder);
+        let command;
+        let args;
+        command = 'npm';
+        console.log();
+        console.log(`Installing ${chalk.cyan(name)} dependencies, this may take couple of minutes`);
+        args = ['install', verbose && '--verbose'].filter(e => e);
+        const proc = spawn.sync(command, args, { stdio: 'inherit' });
+        if (proc.status !== 0) {
+            console.log();
+            console.error(`\`${command} ${args.join(' ')}\` failed`);
+        }
+        console.log();
+        console.log(`Finished installing ${chalk.cyan(name)} dependencies`);
     });
+    process.chdir(originalDirectory);
 }
 
 function isPreactInstalled(appPackage) {
